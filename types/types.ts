@@ -60,3 +60,5 @@ export interface WholePageResponse {
   currentPage: number;
   wholePage: AniListItem[];
 }
+
+
