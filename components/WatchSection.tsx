@@ -1,23 +1,46 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
-import type { AnimeBasicInfo } from "@/types/types";
+import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import type { AnimeBasicInfo, AnimeStreamingInfo } from "@/types/types";
 
 const RANGE = 100;
 
 interface Props {
   anime: AnimeBasicInfo;
   posterUrl: string;
+  streamData: AnimeStreamingInfo | null;
+  initialEp?: number;
 }
 
-export default function WatchSection({ anime, posterUrl }: Props) {
-  const [currentEp, setCurrentEp] = useState(1);
-  const totalRanges = Math.max(1, Math.ceil(anime.epCount / RANGE));
+const stripSrc = (link: string) => link.replace(/^src=/, "");
+
+export default function WatchSection({ anime, posterUrl, streamData, initialEp = 1 }: Props) {
+  const router = useRouter();
+  const [currentEp, setCurrentEp] = useState(initialEp);
+
+  const allEps = useMemo(() => {
+    if (!streamData) return [];
+    return [
+      { ep: 1, src: stripSrc(streamData.link) },
+      ...streamData.ep.map((e, i) => ({ ep: i + 2, src: stripSrc(e.link) })),
+    ];
+  }, [streamData]);
+
+  const totalEps = allEps.length || anime.epCount;
+
+  function goToEp(ep: number) {
+    setCurrentEp(ep);
+    router.push(`/anime/${anime._id}/watch/${ep}`);
+  }
+  const currentSrc = allEps.find((e) => e.ep === currentEp)?.src ?? "";
+
+  const totalRanges = Math.max(1, Math.ceil(totalEps / RANGE));
   const [rangeIdx, setRangeIdx] = useState(0);
 
   const rangeStart = rangeIdx * RANGE + 1;
-  const rangeEnd = Math.min((rangeIdx + 1) * RANGE, anime.epCount);
+  const rangeEnd = Math.min((rangeIdx + 1) * RANGE, totalEps);
   const visibleEps = Array.from({ length: rangeEnd - rangeStart + 1 }, (_, i) => rangeStart + i);
 
   const score = parseFloat(anime.MALScore);
@@ -91,7 +114,7 @@ export default function WatchSection({ anime, posterUrl }: Props) {
                 ["Aired", anime.Aired],
                 ["Premiered", anime.Premiered],
                 ["Duration", anime.Duration],
-                ["Episodes", anime.epCount],
+                ["Episodes", totalEps || undefined],
                 ["Studios", anime.Studios],
                 ["Producers", anime.Producers],
               ] as [string, string | number | undefined][]
@@ -115,15 +138,23 @@ export default function WatchSection({ anime, posterUrl }: Props) {
       <main className="flex-1 min-w-0 flex flex-col overflow-y-auto">
         {/* player */}
         <div className="relative w-full aspect-video bg-black shrink-0">
-          {/* TODO: embed iframe/player here */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-            <div className="w-16 h-16 rounded-full border-2 border-paper/10 flex items-center justify-center">
-              <span className="text-paper/20 text-2xl ml-1">▶</span>
+          {currentSrc ? (
+            <iframe
+              src={currentSrc}
+              className="absolute inset-0 w-full h-full"
+              allowFullScreen
+              allow="autoplay; fullscreen"
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+              <div className="w-16 h-16 rounded-full border-2 border-paper/10 flex items-center justify-center">
+                <span className="text-paper/20 text-2xl ml-1">▶</span>
+              </div>
+              <span className="font-code text-[10px] tracking-[3px] uppercase text-paper/15">
+                No stream source
+              </span>
             </div>
-            <span className="font-code text-[10px] tracking-[3px] uppercase text-paper/15">
-              No stream source
-            </span>
-          </div>
+          )}
         </div>
 
         {/* controls bar — two groups */}
@@ -141,10 +172,18 @@ export default function WatchSection({ anime, posterUrl }: Props) {
             ))}
           </div>
           <div className="flex items-center gap-1.5">
-            <button className="font-code text-[10px] tracking-[1px] uppercase text-paper/30 hover:text-paper/75 transition-colors px-3 py-1 border border-paper/10 hover:border-paper/25">
+            <button
+              onClick={() => goToEp(Math.max(1, currentEp - 1))}
+              disabled={currentEp <= 1}
+              className="font-code text-[10px] tracking-[1px] uppercase text-paper/30 hover:text-paper/75 transition-colors px-3 py-1 border border-paper/10 hover:border-paper/25 disabled:opacity-20 disabled:cursor-not-allowed"
+            >
               ◀ Prev
             </button>
-            <button className="font-code text-[10px] tracking-[1px] uppercase text-paper/30 hover:text-paper/75 transition-colors px-3 py-1 border border-paper/10 hover:border-paper/25">
+            <button
+              onClick={() => goToEp(Math.min(totalEps, currentEp + 1))}
+              disabled={currentEp >= totalEps}
+              className="font-code text-[10px] tracking-[1px] uppercase text-paper/30 hover:text-paper/75 transition-colors px-3 py-1 border border-paper/10 hover:border-paper/25 disabled:opacity-20 disabled:cursor-not-allowed"
+            >
               Next ▶
             </button>
           </div>
@@ -157,9 +196,9 @@ export default function WatchSection({ anime, posterUrl }: Props) {
               <p className="font-serif italic text-[12px] text-paper/35 mb-1">Currently watching</p>
               <p className="font-display text-[28px] tracking-[1px] text-paper leading-none">
                 EPISODE <span className="text-blood">{currentEp}</span>
-                {anime.epCount > 0 && (
+                {totalEps > 0 && (
                   <span className="font-code text-[13px] tracking-normal text-paper/20 ml-2">
-                    / {anime.epCount}
+                    / {totalEps}
                   </span>
                 )}
               </p>
@@ -195,13 +234,13 @@ export default function WatchSection({ anime, posterUrl }: Props) {
         {/* mobile episode grid */}
         <div className="lg:hidden p-4">
           <p className="font-code text-[10px] tracking-[2px] uppercase text-paper/25 mb-3">
-            Episodes — {anime.epCount}
+            Episodes — {totalEps}
           </p>
           <div className="grid grid-cols-8 gap-1">
-            {Array.from({ length: anime.epCount }, (_, i) => i + 1).map((ep) => (
+            {Array.from({ length: totalEps }, (_, i) => i + 1).map((ep) => (
               <button
                 key={ep}
-                onClick={() => setCurrentEp(ep)}
+                onClick={() => goToEp(ep)}
                 className={`aspect-square flex items-center justify-center font-code text-[11px] transition-all duration-150 ${
                   ep === currentEp
                     ? "bg-blood text-paper"
@@ -222,9 +261,9 @@ export default function WatchSection({ anime, posterUrl }: Props) {
           <span className="font-display text-[16px] tracking-[2px] uppercase text-paper">
             Episodes
           </span>
-          {anime.epCount > 0 && (
+          {totalEps > 0 && (
             <span className="font-code text-[10px] text-blood tracking-[1px]">
-              {anime.epCount} eps
+              {totalEps} eps
             </span>
           )}
         </div>
@@ -258,7 +297,7 @@ export default function WatchSection({ anime, posterUrl }: Props) {
             {visibleEps.map((ep) => (
               <button
                 key={ep}
-                onClick={() => setCurrentEp(ep)}
+                onClick={() => goToEp(ep)}
                 className={`aspect-square flex items-center justify-center font-code text-[11px] transition-all duration-150 ${
                   ep === currentEp
                     ? "bg-blood text-paper shadow-[0_0_10px_rgba(196,31,31,0.45)]"

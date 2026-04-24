@@ -5,10 +5,39 @@ import type {
   AnimeListResponseWithDetails,
   AnimePageResponse,
   AnimeDetailsResponse,
+  AnimeStreamingInfo,
+  AniSearchResult,
 } from "@/types/types";
 
 const BASE = "https://anipub.xyz";
 const CACHE: RequestInit = { next: { revalidate: 3600 } };
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+
+const fixImagePath = (path: string) => {
+  if (path.startsWith("https://")) return path;
+  return `/api/proxy-image?url=${encodeURIComponent(`${BASE}/${path}`)}`;
+};
+
+/**
+ * Tries each URL in order (HEAD request), returns the first accessible one.
+ * Falls back to `primary` if all fail.
+ */
+async function resolveImagePath(primary: string, fallbacks: string[]): Promise<string> {
+  const candidates = [primary, ...fallbacks].filter(Boolean);
+
+  for (const url of candidates) {
+    try {
+      const res = await fetch(url, { method: "HEAD", cache: "no-store" });
+      if (res.ok) return url;
+    } catch {
+      // try next candidate
+    }
+  }
+
+  // last resort — return original even if broken
+  return primary;
+}
 
 // ─── Home ──────────────────────────────────────────────────────────────────────
 
@@ -24,16 +53,48 @@ export async function getAnimeDetails(id: number): Promise<AnimeDetailsResponse>
   return res.json();
 }
 
+export async function searchAnime(q: string): Promise<AniSearchResult[]> {
+  const res = await fetch(`${BASE}/api/search/${encodeURIComponent(q)}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  const items: AniSearchResult[] = Array.isArray(data) ? data : (data.results ?? data.data ?? []);
+  return items.map((item) => ({
+    ...item,
+    Image: item.Image?.startsWith("https://") ? item.Image : `${BASE}/${item.Image}`,
+  }));
+}
+
+export async function getStreamingInfo(id: string | number): Promise<AnimeStreamingInfo> {
+  const res = await fetch(`${BASE}/v1/api/details/${id}`, { next: { revalidate: 300 } });
+  if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+  const data = await res.json();
+  return data.local;
+}
+
 export async function getTopRated(page = 1): Promise<AnimeListResponseWithDetails> {
   const data: AnimeListResponse = await (
     await fetch(`${BASE}/api/findbyrating?page=${page}`, CACHE)
   ).json();
 
   const enriched = await Promise.all(
-    data.AniData.map(async (item) => ({
-      ...item,
-      details: await getAnimeDetails(item._id),
-    }))
+    data.AniData.map(async (item) => {
+      const details = await getAnimeDetails(item._id);
+
+      const primaryImage = item.ImagePath ? fixImagePath(item.ImagePath) : "";
+      const fallbackImages = [
+        details?.local?.Cover ? fixImagePath(details.local.Cover) : "",
+        details?.jikan?.images?.jpg?.large_image_url ?? "",
+        details?.jikan?.images?.jpg?.image_url ?? "",
+      ].filter(Boolean);
+
+      const resolvedImage = await resolveImagePath(primaryImage, fallbackImages);
+
+      return {
+        ...item,
+        ImagePath: resolvedImage,
+        details,
+      };
+    })
   );
 
   return {
@@ -46,11 +107,6 @@ export async function findByGenre(genre: string, page = 1): Promise<AnimeListIte
   const data: AnimePageResponse = await (
     await fetch(`${BASE}/api/findbyGenre/${genre}?Page=${page}`, CACHE)
   ).json();
-
-  const fixImagePath = (path?: string) => {
-    const full = path?.startsWith("https://") ? path : `${BASE}/${path}`;
-    return `/api/proxy-image?url=${encodeURIComponent(full)}`;
-  };
 
   return data.wholePage.map((item) => ({
     ...item,
@@ -89,3 +145,4 @@ export async function getRandomAnime(): Promise<AnimeBasicInfo[]> {
 
   return results;
 }
+

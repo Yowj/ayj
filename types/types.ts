@@ -153,6 +153,15 @@ export interface AnimeCharacter {
   }[];
 }
 
+// ─── Search (from /api/search/:q) ─────────────────────────────────────────────
+
+export interface AniSearchResult {
+  Name: string;
+  Id: number;
+  Image: string;
+  finder: string;
+}
+
 // ─── List (from /api/findbyrating, /api/findbyGenre) ──────────────────────────
 
 export interface AnimeListItem {

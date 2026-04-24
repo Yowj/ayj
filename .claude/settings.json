@@ -2,6 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc *)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Yowj\\Desktop\\ayj\\app\\anime\\[id]\\watch"
     ]
   }
 }

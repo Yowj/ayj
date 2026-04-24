@@ -3,20 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
-import type {AnimeListResponseWithDetails } from "@/types/types";
+import type { AnimeListResponseWithDetails } from "@/types/types";
 
 export default function HeroCarousel({ data }: { data: AnimeListResponseWithDetails }) {
   const [current, setCurrent] = useState(0);
   const [fading, setFading] = useState(false);
 
   const items = data.AniData;
-
-  useEffect(() => {
-    items.forEach((item) => {
-      const img = new window.Image();
-      img.src = item.ImagePath;
-    });
-  }, [items]);
+  const anime = items[current];
 
   const navigate = useCallback(
     (to: number) => {
@@ -44,7 +38,6 @@ export default function HeroCarousel({ data }: { data: AnimeListResponseWithDeta
     return () => clearInterval(t);
   }, [goNext]);
 
-  const anime = items[current];
   const score = parseFloat(anime.MALScore);
   const synopsis = anime.DescripTion?.trim() ?? "";
   const synopsisShort = synopsis.length > 200 ? synopsis.slice(0, 200) + "…" : synopsis;
@@ -52,16 +45,16 @@ export default function HeroCarousel({ data }: { data: AnimeListResponseWithDeta
 
   return (
     <div className="relative w-full h-125 bg-ink overflow-hidden select-none border-b-2 border-ink">
-      {/* Background */}
+      {/* Background — ImagePath is already resolved server-side, no onError needed */}
       <div className={`absolute inset-0 transition-opacity duration-500 ${fade}`}>
         <Image
           key={`bg-${anime._id}`}
-          src={anime.ImagePath}
+          src={anime.details.local.Cover}
           alt=""
           fill
           priority
-          className="object-cover object-center opacity-15"
           unoptimized
+          className="object-cover object-center opacity-70"
           aria-hidden
         />
       </div>
@@ -105,7 +98,7 @@ export default function HeroCarousel({ data }: { data: AnimeListResponseWithDeta
         {/* Poster */}
         <div className="hidden xl:block shrink-0">
           <div
-            className={`relative w-44 h-64 overflow-hidden border-2 border-paper/10 shadow-2xl transition-opacity duration-500 ${fade}`}
+            className={`relative w-64 h-96 overflow-hidden border-2 border-paper/10 shadow-2xl transition-opacity duration-500 ${fade}`}
           >
             <Image
               key={`poster-${anime._id}`}
