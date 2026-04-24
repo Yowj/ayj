@@ -3,9 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
-import type { AniListResponse } from "@/types/types";
+import type {AnimeListResponseWithDetails } from "@/types/types";
 
-export default function HeroCarousel({ data }: { data: AniListResponse }) {
+export default function HeroCarousel({ data }: { data: AnimeListResponseWithDetails }) {
   const [current, setCurrent] = useState(0);
   const [fading, setFading] = useState(false);
 
@@ -51,7 +51,7 @@ export default function HeroCarousel({ data }: { data: AniListResponse }) {
   const fade = fading ? "opacity-0" : "opacity-100";
 
   return (
-    <div className="relative w-full h-[500px] bg-ink overflow-hidden select-none border-b-2 border-ink">
+    <div className="relative w-full h-125 bg-ink overflow-hidden select-none border-b-2 border-ink">
       {/* Background */}
       <div className={`absolute inset-0 transition-opacity duration-500 ${fade}`}>
         <Image

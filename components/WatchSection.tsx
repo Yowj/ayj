@@ -2,12 +2,12 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import type { AnimeInfo } from "@/types/types";
+import type { AnimeBasicInfo } from "@/types/types";
 
 const RANGE = 100;
 
 interface Props {
-  anime: AnimeInfo;
+  anime: AnimeBasicInfo;
   posterUrl: string;
 }
 

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getTopRated } from "@/lib/anipub";
-import type { AniListItem } from "@/types/types";
+import type { AnimeListItem } from "@/types/types";
 
 export default async function TrendingSidebar() {
   const { AniData } = await getTopRated();
@@ -15,7 +15,7 @@ export default async function TrendingSidebar() {
         </div>
 
         <div>
-          {AniData.map((anime: AniListItem, i: number) => {
+          {AniData.map((anime: AnimeListItem, i: number) => {
             const score = parseFloat(anime.MALScore);
             const hasScore = !isNaN(score);
 
