@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AYJ
+
+Anime streaming web app built with Next.js 16 App Router. Pulls data from the AniPub API, enriched with Jikan (MyAnimeList) metadata.
+
+## Stack
+
+- **Next.js 16** — App Router, Server Components, server-side caching
+- **React 19**
+- **Tailwind CSS 4**
+- **TypeScript 5**
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Pages
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Route | Description |
+|---|---|
+| `/` | Home — hero carousel, Action & Romance grids, trending sidebar |
+| `/anime/[id]` | Anime detail — synopsis, characters, episode list |
+| `/anime/[id]/watch/[ep]` | Episode player |
+| `/browse` | Full archive, paginated |
+| `/genre/[slug]` | Anime by genre, paginated |
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/
+  page.tsx                    # Home
+  anime/[id]/                 # Anime detail + watch
+  browse/                     # Browse all
+  genre/[slug]/               # Browse by genre
+  api/
+    anime/[id]/               # Anime info proxy
+    search/                   # Search proxy
+    proxy-image/              # Image proxy (CORS bypass)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+components/
+  Navbar.tsx                  # Sticky header with search
+  WatchSection.tsx            # Episode player UI
+  Pagination.tsx
+  home/
+    HeroCarousel.tsx
+    AnimeCard.tsx
+    AnimeGrid.tsx
+    TrendingSidebar.tsx
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+lib/
+  anipub.ts                   # All API calls + server-side caching
 
-## Deploy on Vercel
+types/
+  types.ts                    # TypeScript interfaces
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Data Sources
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **AniPub** (`anipub.xyz`) — primary source for anime list, episode streams, and basic info
+- **Jikan** — enriched metadata (synopsis, characters, images) fetched via AniPub's details endpoint
