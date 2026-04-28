@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Navbar from "@/components/Navbar";
 import WatchSection from "@/components/WatchSection";
 import { getAnimeInfo, getStreamingInfo } from "@/lib/anipub";
 
@@ -42,20 +41,9 @@ export default async function WatchPage({
 
   return (
     <div className="min-h-screen bg-ink text-paper flex flex-col">
-      <Navbar />
       <div className="flex-1 flex min-h-0">
-        <WatchSection
-          anime={anime}
-          posterUrl={poster}
-          streamData={streamData}
-          initialEp={epNum}
-        />
+        <WatchSection anime={anime} posterUrl={poster} streamData={streamData} initialEp={epNum} />
       </div>
-      <footer className="bg-ink text-paper px-8 py-8 border-t-[3px] border-blood font-code text-[11px] tracking-[1.5px] uppercase flex justify-between gap-6 flex-wrap">
-        <div>AYJ <span className="text-acid">×</span> ANIME</div>
-        <div>DATA <span className="text-acid">→</span> ANIPUB.XYZ</div>
-        <div>2026 <span className="text-acid">/</span> NO COOKIES</div>
-      </footer>
     </div>
   );
 }

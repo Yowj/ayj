@@ -19,6 +19,13 @@ export interface AnimeBasicInfo {
   epCount: number;
 }
 
+export interface AnimeCardData {
+  _id: number;
+  Name: string;
+  ImagePath: string;
+  MALScore: string;
+}
+
 // ─── Episode/Streaming Info (from episode endpoint) ───────────────────────────
 
 export interface AnimeEpisode {

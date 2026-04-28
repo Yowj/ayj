@@ -159,18 +159,6 @@ export default function WatchSection({ anime, posterUrl, streamData, initialEp =
 
         {/* controls bar — two groups */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-paper/8 bg-ink shrink-0">
-          <div className="flex items-center">
-            {["Expand", "Focus", "AutoNext", "AutoPlay", "AutoSkip"].map((ctrl, i) => (
-              <button
-                key={ctrl}
-                className={`font-code text-[10px] tracking-[1px] uppercase text-paper/30 hover:text-paper/75 transition-colors py-1 ${
-                  i === 0 ? "pr-4" : "px-4 border-l border-paper/8"
-                }`}
-              >
-                {ctrl}
-              </button>
-            ))}
-          </div>
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => goToEp(Math.max(1, currentEp - 1))}
@@ -206,28 +194,6 @@ export default function WatchSection({ anime, posterUrl, streamData, initialEp =
                 If the server is not working, switch to another below.
               </p>
             </div>
-
-            <div className="flex flex-col gap-2 items-end">
-              {/* Sub / Dub tabs */}
-              <div className="flex border border-paper/10">
-                <button className="font-code text-[10px] tracking-[1.5px] uppercase px-4 py-1.5 bg-paper/8 text-paper/75 border-r border-paper/10">
-                  Sub
-                </button>
-                <button className="font-code text-[10px] tracking-[1.5px] uppercase px-4 py-1.5 text-paper/30 hover:text-paper/60 transition-colors">
-                  Dub
-                </button>
-              </div>
-              {/* Servers */}
-              <div className="flex gap-1.5">
-                {/* TODO: wire up server switching */}
-                <button className="bg-blood text-paper font-code text-[10px] tracking-[1px] uppercase px-4 py-1.5 hover:bg-blood/80 transition-colors">
-                  Server 1
-                </button>
-                <button className="border border-paper/12 text-paper/35 font-code text-[10px] tracking-[1px] uppercase px-4 py-1.5 hover:border-paper/35 hover:text-paper/65 transition-colors">
-                  Server 2
-                </button>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -262,9 +228,7 @@ export default function WatchSection({ anime, posterUrl, streamData, initialEp =
             Episodes
           </span>
           {totalEps > 0 && (
-            <span className="font-code text-[10px] text-blood tracking-[1px]">
-              {totalEps} eps
-            </span>
+            <span className="font-code text-[10px] text-blood tracking-[1px]">{totalEps} eps</span>
           )}
         </div>
 

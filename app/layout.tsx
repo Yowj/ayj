@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, DM_Mono, Fraunces, Noto_Serif_JP } from "next/font/google";
 import "./globals.css";
+import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
 
 const bebasNeue = Bebas_Neue({
   variable: "--font-bebas",
@@ -31,15 +33,17 @@ export const metadata: Metadata = {
   description: "Browse anime from the AniPub archive.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
       lang="en"
       className={`${bebasNeue.variable} ${dmMono.variable} ${fraunces.variable} ${notoSerifJP.variable} antialiased`}
     >
-      <body>{children}</body>
+      <body>
+        <Navbar />
+        {children}
+        <Footer />
+      </body>
     </html>
   );
 }

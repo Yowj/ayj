@@ -39,7 +39,7 @@ async function resolveImagePath(primary: string, fallbacks: string[]): Promise<s
   return primary;
 }
 
-// ─── Home ──────────────────────────────────────────────────────────────────────
+// ─── Home ───────────────────────────────────────────────────────────────────
 
 export async function getAnimeInfo(idOrSlug: string | number): Promise<AnimeBasicInfo> {
   const res = await fetch(`${BASE}/api/info/${idOrSlug}`, CACHE);
@@ -64,17 +64,19 @@ export async function searchAnime(q: string): Promise<AniSearchResult[]> {
   }));
 }
 
-export async function getStreamingInfo(id: string | number): Promise<AnimeStreamingInfo> {
+export async function getStreamingInfo(id: string | number): Promise<AnimeStreamingInfo | null> {
   const res = await fetch(`${BASE}/v1/api/details/${id}`, { next: { revalidate: 300 } });
   if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
   const data = await res.json();
-  return data.local;
+  return data.local ?? null;
 }
 
 export async function getTopRated(page = 1): Promise<AnimeListResponseWithDetails> {
-  const data: AnimeListResponse = await (
-    await fetch(`${BASE}/api/findbyrating?page=${page}`, CACHE)
-  ).json();
+  const res = await fetch(`${BASE}/api/findbyrating?page=${page}`, CACHE);
+
+  if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+
+  const data: AnimeListResponse = await res.json();
 
   const enriched = await Promise.all(
     data.AniData.map(async (item) => {
@@ -94,7 +96,7 @@ export async function getTopRated(page = 1): Promise<AnimeListResponseWithDetail
         ImagePath: resolvedImage,
         details,
       };
-    })
+    }),
   );
 
   return {
@@ -104,9 +106,11 @@ export async function getTopRated(page = 1): Promise<AnimeListResponseWithDetail
 }
 
 export async function findByGenre(genre: string, page = 1): Promise<AnimeListItem[]> {
-  const data: AnimePageResponse = await (
-    await fetch(`${BASE}/api/findbyGenre/${genre}?Page=${page}`, CACHE)
-  ).json();
+  const res = await fetch(`${BASE}/api/findbyGenre/${genre}?Page=${page}`, CACHE);
+
+  if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+
+  const data: AnimePageResponse = await res.json();
 
   return data.wholePage.map((item) => ({
     ...item,
@@ -114,35 +118,31 @@ export async function findByGenre(genre: string, page = 1): Promise<AnimeListIte
   }));
 }
 
-export async function getRandomAnime(): Promise<AnimeBasicInfo[]> {
-  const MAX_ID = 500;
-  const COUNT = 10;
-  const results: AnimeBasicInfo[] = [];
-  const tried = new Set<number>();
-
-  while (results.length < COUNT) {
-    let id: number;
-    do {
-      id = Math.floor(Math.random() * MAX_ID) + 1;
-    } while (tried.has(id));
-    tried.add(id);
-
-    try {
-      const res = await fetch(`${BASE}/api/info/${id}`);
-      if (!res.ok) continue;
-
-      const anime = (await res.json()) as AnimeBasicInfo;
-      const fixUrl = (p?: string) => (p?.startsWith("https://") ? p : `${BASE}/${p}`);
-
-      anime.ImagePath = fixUrl(anime.ImagePath) ?? anime.ImagePath;
-      anime.Cover = fixUrl(anime.Cover) ?? anime.Cover;
-
-      results.push(anime);
-    } catch {
-      // skip failed fetches
-    }
-  }
-
-  return results;
+export async function getAnimeTotal(): Promise<number> {
+  const res = await fetch("https://anipub.xyz/api/getAll", CACHE);
+  if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+  return res.json();
 }
 
+export async function getAnimeByPage(page = 1): Promise<AnimeBasicInfo[]> {
+  const COUNT = 20;
+  const ids = Array.from({ length: COUNT }, (_, i) => (page - 1) * COUNT + i + 1);
+
+  const results = await Promise.all(
+    ids.map(async (id) => {
+      try {
+        const res = await fetch(`${BASE}/api/info/${id}`, CACHE);
+        if (!res.ok) return null;
+        const anime = (await res.json()) as AnimeBasicInfo;
+        const fixUrl = (p?: string) => (!p ? p : p.startsWith("https://") ? p : `${BASE}/${p}`);
+        anime.ImagePath = fixUrl(anime.ImagePath) ?? anime.ImagePath;
+        anime.Cover = fixUrl(anime.Cover) ?? anime.Cover;
+        return anime;
+      } catch {
+        return null;
+      }
+    }),
+  );
+
+  return results.filter((a): a is AnimeBasicInfo => a !== null);
+}

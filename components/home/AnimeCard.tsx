@@ -1,13 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { AnimeListItem } from "@/types/types";
+import type { AnimeCardData, AnimeListItem } from "@/types/types";
 
-export default function AnimeCard({ anime }: { anime: AnimeListItem}) {
+export default function AnimeCard({ anime }: { anime: AnimeCardData}) {
   const score = parseFloat(anime.MALScore);
   const hasScore = !isNaN(score);
 
   return (
-    <Link href={`/anime/${anime._id}`} className="group relative block">
+    <Link href={`/anime/${anime._id}/watch/1`} className="group relative block">
       <div className="relative w-full aspect-3/4 overflow-hidden bg-paper-dim border border-ink/10 mb-3">
         <Image
           src={anime.ImagePath}
