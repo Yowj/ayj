@@ -7,8 +7,6 @@ import { useState, useEffect, useRef } from "react";
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Browse", href: "/browse" },
-  { label: "Genres", href: "/genres" },
-  { label: "Top Rated", href: "/top-rated" },
 ];
 
 type SearchResult = {

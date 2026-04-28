@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { AnimeCardData, AnimeListItem } from "@/types/types";
 
-export default function AnimeCard({ anime }: { anime: AnimeCardData}) {
+export default function AnimeCard({ anime }: { anime: AnimeCardData | AnimeListItem}) {
   const score = parseFloat(anime.MALScore);
   const hasScore = !isNaN(score);
 

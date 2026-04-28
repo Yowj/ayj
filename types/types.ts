@@ -1,4 +1,4 @@
-// ─── Basic Info (from /api/info/:id) ──────────────────────────────────────────
+// ─── /api/info/:id ────────────────────────────────────────────────────────────
 
 export interface AnimeBasicInfo {
   _id: number;
@@ -19,14 +19,29 @@ export interface AnimeBasicInfo {
   epCount: number;
 }
 
-export interface AnimeCardData {
+// ─── /api/findbyrating · /api/findbyGenre ─────────────────────────────────────
+
+export interface AnimeListItem {
   _id: number;
   Name: string;
   ImagePath: string;
   MALScore: string;
+  RatingsNum: number;
+  DescripTion: string;
+  finder: string;
 }
 
-// ─── Episode/Streaming Info (from episode endpoint) ───────────────────────────
+export interface AnimeListResponse {
+  currentPage: number;
+  AniData: AnimeListItem[];
+}
+
+export interface AnimePageResponse {
+  currentPage: number;
+  wholePage: AnimeListItem[];
+}
+
+// ─── /v1/api/details/:id (streaming) ─────────────────────────────────────────
 
 export interface AnimeEpisode {
   name?: string;
@@ -47,7 +62,7 @@ export interface AnimeStreamingInfo {
   finder: string;
 }
 
-// ─── Full Details (from /anime/api/details/:id) ────────────────────────────────
+// ─── /anime/api/details/:id (full details) ────────────────────────────────────
 
 export interface AnimeDetailsResponse {
   local: AnimeBasicInfo;
@@ -140,10 +155,7 @@ export interface AnimeCharacter {
     url: string;
     images: {
       jpg: { image_url: string };
-      webp: {
-        image_url: string;
-        small_image_url: string;
-      };
+      webp: { image_url: string; small_image_url: string };
     };
     name: string;
   };
@@ -160,7 +172,7 @@ export interface AnimeCharacter {
   }[];
 }
 
-// ─── Search (from /api/search/:q) ─────────────────────────────────────────────
+// ─── /api/search/:q ───────────────────────────────────────────────────────────
 
 export interface AniSearchResult {
   Name: string;
@@ -169,29 +181,12 @@ export interface AniSearchResult {
   finder: string;
 }
 
-// ─── List (from /api/findbyrating, /api/findbyGenre) ──────────────────────────
+// ─── Component types ──────────────────────────────────────────────────────────
 
-export interface AnimeListItem {
-  _id: number;
-  Name: string;
-  ImagePath: string;
-  MALScore: string;
-  RatingsNum: number;
-  DescripTion: string;
-  finder: string;
-}
+// Minimal fields needed by AnimeCard/AnimeGrid — both AnimeListItem and AnimeBasicInfo satisfy this
+export type AnimeCardData = Pick<AnimeListItem, "_id" | "Name" | "ImagePath" | "MALScore">;
 
-export interface AnimeListResponse {
-  currentPage: number;
-  AniData: AnimeListItem[];
-}
-
-export interface AnimePageResponse {
-  currentPage: number;
-  wholePage: AnimeListItem[];
-}
-
-// ─── Enriched List (list item + full details) ─────────────────────────────────
+// ─── Enriched list (getTopRated result) ───────────────────────────────────────
 
 export interface AnimeListItemWithDetails extends AnimeListItem {
   details: AnimeDetailsResponse;

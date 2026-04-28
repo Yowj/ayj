@@ -1,11 +1,11 @@
 import Link from "next/link";
 import AnimeCard from "./AnimeCard";
-import type { AnimeCardData } from "@/types/types";
+import type { AnimeCardData, AnimeListItem } from "@/types/types";
 
 interface AnimeGridProps {
   title?: string;
   viewAllHref?: string;
-  items: AnimeCardData[];
+  items: AnimeCardData[] | AnimeListItem[];
 }
 
 export default function AnimeGrid({ title, viewAllHref, items }: AnimeGridProps) {
