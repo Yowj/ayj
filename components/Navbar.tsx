@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
@@ -109,7 +110,7 @@ export default function Navbar() {
                   }}
                   className="flex items-center gap-3 px-3 py-2.5 hover:bg-paper/5 transition-colors border-b border-paper/5 last:border-0"
                 >
-                  <img
+                  <Image
                     src={`/api/proxy-image?url=${encodeURIComponent(item.Image)}`}
                     alt={item.Name}
                     width={28}
