@@ -63,4 +63,4 @@ types/
 - **AniPub** (`anipub.xyz`) — primary source for anime list, episode streams, and basic info
 - **Jikan** — enriched metadata (synopsis, characters, images) fetched via AniPub's details endpoint
 
-TEST
+TEST/dev branch
