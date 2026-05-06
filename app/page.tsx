@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+
 import HeroCarousel from "@/components/home/HeroCarousel";
 import AnimeGrid from "@/components/home/AnimeGrid";
 import TrendingSidebar from "@/components/home/TrendingSidebar";

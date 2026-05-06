@@ -19,26 +19,6 @@ const fixImagePath = (path: string) => {
   return `/api/proxy-image?url=${encodeURIComponent(`${BASE}/${path}`)}`;
 };
 
-/**
- * Tries each URL in order (HEAD request), returns the first accessible one.
- * Falls back to `primary` if all fail.
- */
-async function resolveImagePath(primary: string, fallbacks: string[]): Promise<string> {
-  const candidates = [primary, ...fallbacks].filter(Boolean);
-
-  for (const url of candidates) {
-    try {
-      const res = await fetch(url, { method: "HEAD", cache: "no-store" });
-      if (res.ok) return url;
-    } catch {
-      // try next candidate
-    }
-  }
-
-  // last resort — return original even if broken
-  return primary;
-}
-
 // ─── Home ───────────────────────────────────────────────────────────────────
 
 export async function getAnimeInfo(idOrSlug: string | number): Promise<AnimeBasicInfo> {
@@ -82,18 +62,16 @@ export async function getTopRated(page = 1): Promise<AnimeListResponseWithDetail
     data.AniData.map(async (item) => {
       const details = await getAnimeDetails(item._id);
 
-      const primaryImage = item.ImagePath ? fixImagePath(item.ImagePath) : "";
-      const fallbackImages = [
-        details?.local?.Cover ? fixImagePath(details.local.Cover) : "",
-        details?.jikan?.images?.jpg?.large_image_url ?? "",
-        details?.jikan?.images?.jpg?.image_url ?? "",
-      ].filter(Boolean);
-
-      const resolvedImage = await resolveImagePath(primaryImage, fallbackImages);
+      const image =
+        item.ImagePath ? fixImagePath(item.ImagePath)
+        : details?.local?.Cover ? fixImagePath(details.local.Cover)
+        : details?.jikan?.images?.jpg?.large_image_url
+        ?? details?.jikan?.images?.jpg?.image_url
+        ?? "";
 
       return {
         ...item,
-        ImagePath: resolvedImage,
+        ImagePath: image,
         details,
       };
     }),
