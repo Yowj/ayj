@@ -1,4 +1,4 @@
-# AYJ
+# AYJtest1
 
 Anime streaming web app built with Next.js 16 App Router. Pulls data from the AniPub API, enriched with Jikan (MyAnimeList) metadata.
 
